@@ -1,14 +1,14 @@
 {
     "Stiffness properties": {
-        "E1": 154000,
-        "E2": 8500,
-        "G12": 4200,
+        "E1": 150000,
+        "E2": 8000,
+        "G12": 4000,
         "nu12": 0.35
     },
     "Ply thickness": {
         "t_ply": 0.125
     },
     "Stacking sequence": {
-        "angles": [0, 45, 90]
+        "angles": [0, 45, 0]
     }
 }
