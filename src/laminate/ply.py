@@ -2,11 +2,36 @@ from dataclasses import dataclass
 import numpy as np
 from laminate.material import OrthotropicMaterial
 
-# Laminate properties are based on
-# REF: https://ntrs.nasa.gov/api/citations/19950009349/downloads/19950009349.pdf
-
 @dataclass
 class Ply:
+    """
+    Represents a single lamina (ply) in a composite laminate.
+
+    Parameter
+    ----------
+    material : OrthotropicMaterial
+        The material properties of the ply.
+    thickness : float
+        Thickness of the ply (in meters or consistent units).
+    theta_deg : float
+        Orientation angle of the ply in degrees relative to the laminate reference axis.
+    z_bot : float, optional
+        Z-coordinate of the bottom surface of the ply. Default is 0.0.
+    z_top : float, optional
+        Z-coordinate of the top surface of the ply. Default is 0.0.
+
+    Attributes
+    ----------
+    lamina_stiffness_matrix : np.ndarray, shape (3, 3)
+        Transformed stiffness matrix Q̅ (Qbar) of the ply in the global
+        laminate axes. Computed according to classical lamination theory
+        (Equation 21 of NASA TM 110235, 1995).
+    
+    Notes
+    -----
+    Laminate properties are based on NASA TM 110235 (1995):
+    https://ntrs.nasa.gov/api/citations/19950009349/downloads/19950009349.pdf
+    """
     material: OrthotropicMaterial
     thickness: float
     theta_deg: float
@@ -16,7 +41,19 @@ class Ply:
     @property
     def lamina_stiffness_matrix(self) -> np.ndarray:
         """
-        Transformed stiffness matrix Qbar according to Equation 21 of REF
+        Calculates the transformed stiffness matrix Q̅ for the ply.
+
+        Returns
+        -------
+        np.ndarray, shape (3, 3)
+            The ply stiffness matrix transformed to the laminate coordinate
+            system, accounting for ply orientation (theta_deg).
+
+        Notes
+        -----
+        The transformation is based on Equation 21 of NASA TM 110235.
+        It considers the cosine and sine of the ply angle and uses the
+        reduced stiffness matrix of the material (Q).
         """
         theta = np.deg2rad(self.theta_deg)
         m = np.cos(theta)
