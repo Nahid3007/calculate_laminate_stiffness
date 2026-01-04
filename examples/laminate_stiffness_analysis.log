@@ -1,0 +1,26 @@
+2026-01-04 12:35:44 [INFO example_laminate_analysis]: This is an example script!
+2026-01-04 12:35:44 [INFO utilities]: Input data loaded from JSON:
+E1 = 154000.0, E2 = 8500.0, G12 = 4200.0, nu12 = 0.350
+Ply thickness = 0.184
+No. of plies = 10
+Total laminate thickness = 1.84000
+Stacking angles = [45.0, 90.0, 0.0, 90.0, 0.0, 90.0, 45.0, 0.0, 0.0, 0.0]
+2026-01-04 12:35:44 [INFO laminate_calculation]: A matrix:
+[[164516.90827756  18466.3077856   13477.12373434]
+ [ 18466.3077856  110608.4133402   13477.12373434]
+ [ 13477.12373434  13477.12373434  20683.04412791]]
+2026-01-04 12:35:44 [INFO laminate_calculation]: Unsymmetric laminate detected (B matrix != 0).
+2026-01-04 12:35:44 [INFO laminate_calculation]: B matrix:
+[[ 33333.08138473  -3575.5921793   -3719.68615068]
+ [ -3575.5921793  -26181.89702612  -3719.68615068]
+ [ -3719.68615068  -3719.68615068  -3575.5921793 ]]
+2026-01-04 12:35:44 [INFO laminate_calculation]: D matrix:
+[[51487.82681616  6525.77889189  5171.19034636]
+ [ 6525.77889189 23502.5614123   5171.19034636]
+ [ 5171.19034636  5171.19034636  7151.19410527]]
+2026-01-04 12:35:44 [INFO laminate_calculation]: Homogenized membrane stiffness:
+{'E11': 68621.456, 'E22': 40538.784, 'G12': 9047.689, 'nu12': 0.092}
+2026-01-04 12:35:44 [INFO laminate_calculation]: Homogenized bening stiffness:
+{'E11': 74374.838, 'E22': 27791.07, 'G12': 9971.275, 'nu12': 0.153}
+2026-01-04 12:35:44 [INFO laminate_calculation]: Laminate analysis complete
+2026-01-04 12:35:44 [INFO utilities]: Closing logger.

@@ -1,0 +1,11 @@
+Stiffness properties:
+  E1: 150000
+  E2: 8000
+  G12: 4000
+  nu12: 0.35
+
+Ply thickness:
+  t_ply: 0.125
+
+Stacking sequence:
+  angles: [45, 0, 90]
