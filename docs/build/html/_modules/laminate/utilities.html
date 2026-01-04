@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>laminate.utilities &mdash; laminate_stiffness_analysis 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            laminate_stiffness_analysis
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Composite Laminate Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">laminate_stiffness_analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">laminate.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for laminate.utilities</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+
+
+<div class="viewcode-block" id="LaminateInput">
+<a class="viewcode-back" href="../../modules.html#laminate.utilities.LaminateInput">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LaminateInput</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents the input data required for laminate stiffness analysis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    E1 : float</span>
+<span class="sd">        Longitudinal Young&#39;s modulus of the ply (Pa or consistent units).</span>
+<span class="sd">    E2 : float</span>
+<span class="sd">        Transverse Young&#39;s modulus of the ply (Pa or consistent units).</span>
+<span class="sd">    G12 : float</span>
+<span class="sd">        In-plane shear modulus of the ply (Pa or consistent units).</span>
+<span class="sd">    nu12 : float</span>
+<span class="sd">        Major Poisson&#39;s ratio of the ply.</span>
+<span class="sd">    t_ply : float</span>
+<span class="sd">        Thickness of a single ply (m or consistent units).</span>
+<span class="sd">    ply_angles : List[int]</span>
+<span class="sd">        List of ply orientation angles in degrees.</span>
+
+<span class="sd">    Attribute</span>
+<span class="sd">    ----------</span>
+<span class="sd">    no_of_plies : int</span>
+<span class="sd">        Total number of plies in the laminate.</span>
+<span class="sd">    t_total : float</span>
+<span class="sd">        Total laminate thickness (sum of all ply thicknesses).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">E1</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">E2</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">G12</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">nu12</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">t_ply</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ply_angles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">no_of_plies</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Number of plies in the laminate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ply_angles</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">t_total</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Total thickness of the laminate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_of_plies</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_ply</span></div>
+
+    
+
+<div class="viewcode-block" id="read_input">
+<a class="viewcode-back" href="../../modules.html#laminate.utilities.read_input">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_input</span><span class="p">(</span><span class="n">input_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> 
+               <span class="n">logger</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LaminateInput</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads laminate input data from a YAML file and returns a LaminateInput object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_file : Path</span>
+<span class="sd">        Path to the YAML input file containing laminate properties.</span>
+<span class="sd">    logger : logging.Logger, optional</span>
+<span class="sd">        Logger for informational messages. If None, a default logger is created.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    LaminateInput</span>
+<span class="sd">        Dataclass containing E1, E2, G12, nu12, ply thickness, and ply angles.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If expected keys (&quot;Stiffness properties&quot;, &quot;Ply thickness&quot;, &quot;Stacking sequence&quot;)</span>
+<span class="sd">        are missing from the input file.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The YAML file should have the following structure:</span>
+<span class="sd">    </span>
+<span class="sd">    Stiffness properties:</span>
+<span class="sd">        E1: &lt;value&gt;</span>
+<span class="sd">        E2: &lt;value&gt;</span>
+<span class="sd">        G12: &lt;value&gt;</span>
+<span class="sd">        nu12: &lt;value&gt;</span>
+<span class="sd">    Ply thickness:</span>
+<span class="sd">        t_ply: &lt;value&gt;</span>
+<span class="sd">    Stacking sequence:</span>
+<span class="sd">        angles: [angle1, angle2, ...]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;laminate_stiffness_analysis&quot;</span><span class="p">)</span>
+
+    <span class="n">input_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">stiffness</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Stiffness properties&quot;</span><span class="p">]</span>
+        <span class="n">thickness</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Ply thickness&quot;</span><span class="p">]</span>
+        <span class="n">stacking</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Stacking sequence&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid input structure: missing </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+    <span class="n">laminate_input</span> <span class="o">=</span> <span class="n">LaminateInput</span><span class="p">(</span>
+        <span class="n">E1</span><span class="o">=</span><span class="n">stiffness</span><span class="p">[</span><span class="s2">&quot;E1&quot;</span><span class="p">],</span>
+        <span class="n">E2</span><span class="o">=</span><span class="n">stiffness</span><span class="p">[</span><span class="s2">&quot;E2&quot;</span><span class="p">],</span>
+        <span class="n">G12</span><span class="o">=</span><span class="n">stiffness</span><span class="p">[</span><span class="s2">&quot;G12&quot;</span><span class="p">],</span>
+        <span class="n">nu12</span><span class="o">=</span><span class="n">stiffness</span><span class="p">[</span><span class="s2">&quot;nu12&quot;</span><span class="p">],</span>
+        <span class="n">t_ply</span><span class="o">=</span><span class="n">thickness</span><span class="p">[</span><span class="s2">&quot;t_ply&quot;</span><span class="p">],</span>
+        <span class="n">ply_angles</span><span class="o">=</span><span class="n">stacking</span><span class="p">[</span><span class="s2">&quot;angles&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input data loaded from JSON:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;E1 = </span><span class="si">%.1f</span><span class="s2">, E2 = </span><span class="si">%.1f</span><span class="s2">, G12 = </span><span class="si">%.1f</span><span class="s2">, nu12 = </span><span class="si">%.3f</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;Ply thickness = </span><span class="si">%.3f</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;No. of plies = </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;Total laminate thickness = </span><span class="si">%.5f</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;Stacking angles = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">laminate_input</span><span class="o">.</span><span class="n">E1</span><span class="p">,</span> <span class="n">laminate_input</span><span class="o">.</span><span class="n">E2</span><span class="p">,</span> <span class="n">laminate_input</span><span class="o">.</span><span class="n">G12</span><span class="p">,</span> <span class="n">laminate_input</span><span class="o">.</span><span class="n">nu12</span><span class="p">,</span>
+        <span class="n">laminate_input</span><span class="o">.</span><span class="n">t_ply</span><span class="p">,</span>
+        <span class="n">laminate_input</span><span class="o">.</span><span class="n">no_of_plies</span><span class="p">,</span>
+        <span class="n">laminate_input</span><span class="o">.</span><span class="n">t_total</span><span class="p">,</span>
+        <span class="n">laminate_input</span><span class="o">.</span><span class="n">ply_angles</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">laminate_input</span></div>
+
+
+
+<div class="viewcode-block" id="setup_logger">
+<a class="viewcode-back" href="../../modules.html#laminate.utilities.setup_logger">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_logger</span><span class="p">(</span>
+    <span class="n">logPath</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">write_to_console</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configures a logger to write messages to a file and optionally to the console.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logPath : str or Path</span>
+<span class="sd">        Path to the log file.</span>
+<span class="sd">    level : int, optional</span>
+<span class="sd">        Logging level (default is logging.INFO).</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Name of the logger. Default is &quot;laminate_stiffness_analysis&quot;.</span>
+<span class="sd">    write_to_console : bool, optional</span>
+<span class="sd">        If True, also outputs logs to the console. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logging.Logger</span>
+<span class="sd">        Configured logger instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;laminate_stiffness_analysis&quot;</span>
+    <span class="n">logPath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">logPath</span><span class="p">)</span>
+
+    <span class="c1"># Ensure log directory exists</span>
+    <span class="k">if</span> <span class="n">logPath</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">logPath</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Prevent duplicate handlers</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> [</span><span class="si">%(levelname)-4.4s</span><span class="s2"> </span><span class="si">%(module)s</span><span class="s2">]: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># File handler</span>
+    <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span>
+        <span class="n">logPath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
+    <span class="p">)</span>
+    <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+
+    <span class="c1"># Console handler</span>
+    <span class="k">if</span> <span class="n">write_to_console</span><span class="p">:</span>
+        <span class="n">console_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="n">console_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console_handler</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="close_logger">
+<a class="viewcode-back" href="../../modules.html#laminate.utilities.close_logger">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">close_logger</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Closes all handlers of a logger and releases resources.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.Logger</span>
+<span class="sd">        Logger to close.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Closing logger.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">[:]):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">logger</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nahid Miah.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
